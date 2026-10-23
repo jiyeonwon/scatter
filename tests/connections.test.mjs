@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {recommendConnections} from '../src/connections.js';
+import {tokenize} from '../src/storage.js';
+const memos=[{id:'a',text:'빛과 그림자를 활용한 전시 공간'},{id:'b',text:'움직이는 글자와 사람들의 기억'},{id:'c',text:'감자와 양말'}];
+const words=memos.flatMap(tokenize),selected=words.find(w=>w.text==='빛과');
+test('maximum three candidates are real saved tokens with source identity',()=>{const result=recommendConnections(selected,words,memos);assert.ok(result.length>0&&result.length<=3);for(const c of result){assert.equal(words.find(w=>w.id===c.word.id),c.word);assert.equal(c.memo.id,c.word.memoId);assert.ok(c.reason);}});
+test('cross memo motion recommendation outranks same memo light-shadow',()=>{const r=recommendConnections(selected,words,memos);assert.equal(r[0].word.text,'움직이는');assert.equal(r[0].crossMemo,true);assert.ok(r.some(c=>c.word.text==='그림자를'));});
+test('screen position and array order cannot affect semantic ranking',()=>{const first=recommendConnections(selected,words,memos).map(c=>c.word.id);const moved=[...words].reverse().map((w,i)=>({...w,x:9999-i*123,y:i*13}));assert.deepEqual(recommendConnections(selected,moved,memos).map(c=>c.word.id),first);});
+test('unknown concepts produce an honest empty state',()=>{const ms=[{id:'a',text:'감자 양말'},{id:'b',text:'연필 지우개'}],ws=ms.flatMap(tokenize);assert.deepEqual(recommendConnections(ws[0],ws,ms),[]);});
+test('inactive and removed source tokens never appear',()=>{const active=words.filter(w=>w.memoId==='a');assert.ok(recommendConnections(selected,active,memos).every(c=>c.word.memoId==='a'));assert.deepEqual(recommendConnections(selected,[],memos),[]);});
+test('short Korean stems do not match unrelated prefixes',()=>{const ms=[{id:'a',text:'비밀과 물리학'},{id:'b',text:'자연과 숲'}],ws=ms.flatMap(tokenize);assert.deepEqual(recommendConnections(ws[0],ws,ms),[]);assert.deepEqual(recommendConnections(ws[1],ws,ms),[]);});

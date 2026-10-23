@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {WordPhysics} from '../src/physics.js';
+const classes=()=>({add(){},remove(){},toggle(){},contains(){return false;}});
+function fakeBody(id,memoId,x){return {word:{id,memoId,text:id},el:{offsetWidth:100,offsetHeight:40,style:{setProperty(){}},classList:classes()},x,y:100,vx:0,vy:0,angle:0};}
+function harness(reduced=false){const p=Object.create(WordPhysics.prototype);p.bodies=[fakeBody('a','original-a',30),fakeBody('b','original-b',700)];p.canvas={clientWidth:900,clientHeight:450};p.links=new Map();p.reduced=reduced;p.drawLinks=()=>{};return p;}
+test('semantic selection connects distant tokens and moves candidate next to anchor',()=>{const p=harness();assert.equal(p.connect('a','b'),true);assert.equal(p.group(p.bodies[0]).length,2);assert.equal(p.bodies[1].target.x,142);assert.equal(p.bodies[1].word.memoId,'original-b');});
+test('unlink keeps individual words and their source metadata',()=>{const p=harness();p.connect('a','b');p.unlink(p.bodies[0]);assert.equal(p.links.size,0);assert.equal(p.bodies.length,2);assert.equal(p.bodies[1].word.id,'b');});
+test('reduced motion connects immediately without active targets',()=>{const p=harness(true);p.connect('a','b');assert.equal(p.bodies[1].target,null);assert.equal(p.bodies[1].x,142);});
+test('linked drop reports every separate original token and clears drag state',()=>{const p=harness();p.connect('a','b');const drop={classList:{contains:()=>true,remove(){}}};globalThis.document={body:{classList:classes()},querySelector:()=>drop};let received;p.onDrop=(...args)=>{received=args};const [a,b]=p.bodies;p.drag={b:a,moved:true,group:[a,b],orig:[{b:a,x:30,y:100},{b,x:142,y:100}]};p.up({clientX:200,clientY:600});assert.deepEqual(received,['a',200,600,['a','b']]);assert.equal(p.drag,null);assert.equal(a.vx,0);assert.deepEqual(p.bodies.map(b=>b.word.memoId),['original-a','original-b']);});
+test('pointer cancellation restores group and never inserts tokens',()=>{const p=harness();globalThis.document={body:{classList:classes()},querySelector:()=>null};p.onDrop=()=>assert.fail('cancelled gesture cannot drop');const [a,b]=p.bodies;p.drag={b:a,cancel:true,moved:true,group:[a,b],orig:[{b:a,x:30,y:100},{b,x:142,y:100}]};p.up({});assert.equal(a.x,30);assert.equal(b.x,142);assert.equal(p.drag,null);});
