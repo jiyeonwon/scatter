@@ -82,4 +82,4 @@ Pointer Events와 pointer capture, `touch-action:none`, 다중 포인터 중복 
 
 01 COLLECT를 01 HOME으로 표시하며 기존 `#collect` 주소도 HOME으로 연결한다. 원래 제목·컬러·폰트·최대 콘텐츠 폭을 유지하고, 메모 입력 영역은 NEW MEMO로 펼치도록 하여 축적된 기록을 우선 노출한다. HOME 기록은 3열(모바일 1열) white/pink 카드다.
 
-SCATTER는 기존 캔버스·SELECTED MEMOS·DROP HERE 배치를 유지하고 상단 FIND A CONNECTION으로 의미 조합을 만든다. 별도 아이디어 패널은 두지 않으며 생성 결과는 기존 DROP HERE와 ARCHIVE 흐름에 연결한다. 캔버스에는 선택한 메모 4개의 연결 가능한 핵심 토큰만 표시한다. ARCHIVE에는 기존 카드 형태를 유지하며 ALL/IDEAS/MEMOS 필터만 추가한다.
+SCATTER는 기존 캔버스·SELECTED MEMOS·DROP HERE 배치를 유지하고 상단 FIND A CONNECTION으로 의미 조합을 만든다. 별도 아이디어 패널은 두지 않으며 생성 결과는 기존 DROP HERE와 ARCHIVE 흐름에 연결한다. 캔버스에는 선택한 메모(최대 10개)의 연결 가능한 핵심 토큰만 표시한다. ARCHIVE에는 기존 카드 형태를 유지하며 ALL/IDEAS/MEMOS 필터만 추가한다.
